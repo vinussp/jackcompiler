@@ -11,7 +11,8 @@ public class App
     {
 
 
-        String input = "false true null var char boolean null this field while if return ";
+        //String input = "false true null var char boolean null this field while if return ";
+        String input = "+ / > < ~ & * | ()";
         Scanner scan = new Scanner (input.getBytes());
         for (Token tk = scan.nextToken(); tk.type != EOF; tk = scan.nextToken()) {
             System.out.println(tk);

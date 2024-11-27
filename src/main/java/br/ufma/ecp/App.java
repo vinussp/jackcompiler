@@ -1,10 +1,7 @@
 package br.ufma.ecp;
 
-import static br.ufma.ecp.token.TokenType.*;
-
-
-
-import br.ufma.ecp.token.Token; 
+import br.ufma.ecp.token.Token;
+import static br.ufma.ecp.token.TokenType.EOF; 
 
 public class App 
 {
@@ -13,8 +10,8 @@ public class App
     public static void main( String[] args )
     {
 
-    
-        String input = "45  + if - \"ola\" laranja 876";
+
+        String input = "false true null var char boolean null this field while if return ";
         Scanner scan = new Scanner (input.getBytes());
         for (Token tk = scan.nextToken(); tk.type != EOF; tk = scan.nextToken()) {
             System.out.println(tk);

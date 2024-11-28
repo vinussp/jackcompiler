@@ -3,10 +3,12 @@ public class Token {
 
     public final TokenType type;
     public final String lexeme;
+    public final int line;
 
-    public Token (TokenType type, String lexeme) {
+    public Token (TokenType type, String lexeme, int line) {
         this.type = type;
         this.lexeme = lexeme;
+        this.line = line;
     }
 
     public String toString() {
@@ -25,9 +27,10 @@ public class Token {
 
         if (TokenType.isKeyword(this.type) )
             type = "keyword";
-    
+
 
         return "<"+ type +">" + lexeme + "</"+ type + ">";
+        //return "<"+line+":"+ type +">" + lexeme + "</"+ type + ">";
     }
     
 }

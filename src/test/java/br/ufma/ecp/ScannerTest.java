@@ -1,10 +1,9 @@
 package br.ufma.ecp;
 
-import static org.junit.Assert.assertEquals;
-
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
+import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
 import br.ufma.ecp.token.Token;
@@ -23,7 +22,7 @@ public class ScannerTest extends TestSupport {
             System.out.println(tk);
         }
     }
-    
+     
     @Test
     public void testScannerWithSquareGame() throws IOException {
         var input = fromFile("Square/SquareGame.jack");

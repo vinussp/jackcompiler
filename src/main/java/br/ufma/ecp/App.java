@@ -11,7 +11,8 @@ public class App
     {
         
         String input = """
-        // é um comentario 10
+        //while
+        é um comentario 10
         45 \"hello\" variavel + while < , if
         /*
         comentario em bloco

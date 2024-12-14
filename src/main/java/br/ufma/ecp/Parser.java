@@ -117,6 +117,31 @@ public class Parser {
         expectPeek(TokenType.SEMICOLON);
         printNonTerminal("/letStatement");
      }
+
+     void parseSubroutineBody(String functionName, TokenType subroutineType) {
+
+        printNonTerminal("subroutineBody");
+        expectPeek(TokenType.LBRACE);
+        while (peekTokenIs(TokenType.VAR)) {
+            parseVarDec();
+        }
+        var nlocals = symbolTable.varCount(Kind.VAR);
+
+        vmWriter.writeFunction(functionName, nlocals);
+
+        if (subroutineType == TokenType.CONSTRUCTOR) {
+            vmWriter.writePush(VMWriter.Segment.POINTER, symbolTable.varCount(Kind.FIELD));
+            vmWriter.writeCall("Memory.alloc", 1);
+            vmWriter.writePop(VMWriter.Segment.POINTER, 0);
+        }
+
+        if (subroutineType == TokenType.METHOD) {
+            vmWriter.writePush(VMWriter.Segment.POINTER, 0);
+            vmWriter.writePop(VMWriter.Segment.POINTER, 0);
+        }
+        expectPeek(TokenType.RBRACE);
+        printNonTerminal("/subroutineBody");
+     }
  
      // funções auxiliares
 

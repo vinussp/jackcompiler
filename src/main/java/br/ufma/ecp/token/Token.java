@@ -18,7 +18,7 @@ public class Token {
             type =  "integerConstant";
 
         if (type.equals("STRING"))
-            type =  "stringConst";
+            type =  "stringConstant";
 
         if (type.equals("IDENT"))
             type =  "identifier";
@@ -40,9 +40,9 @@ public class Token {
             type = "keyword";
 
 
-        //return "<"+ type +"> " + valor + " </"+ type + ">";
+        return "<"+ type +"> " + valor + " </"+ type + ">";
         //return "<"+ type +">" + lexeme + "</"+ type + ">";
-        return "<"+line+":"+ type +">" + lexeme + "</"+ type + ">";
+        //return "<"+line+":"+ type +">" + lexeme + "</"+ type + ">";
     }
     
 }

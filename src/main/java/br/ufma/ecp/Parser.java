@@ -1,5 +1,6 @@
 package br.ufma.ecp;
 
+import br.ufma.ecp.SymbolTable.Kind;
 import br.ufma.ecp.token.Token;
 import br.ufma.ecp.token.TokenType;
 
@@ -11,6 +12,8 @@ public class Parser {
      private Token currentToken;
      private Token peekToken;
      private StringBuilder xmlOutput = new StringBuilder();
+     private String className;
+     private SymbolTable symbolTable;
  
      public Parser(byte[] input) {
          scan = new Scanner(input);
@@ -26,6 +29,36 @@ public class Parser {
      public void parse () {
          
      }
+
+     void parseParameterList() {
+        printNonTerminal("parameterList");
+
+        SymbolTable.Kind kind = Kind.ARG;
+
+        if (!peekTokenIs(TokenType.RPAREN)) // verifica se tem pelo menos uma expressao
+        {
+            expectPeek(TokenType.INT, TokenType.CHAR, TokenType.BOOLEAN, TokenType.IDENT);
+            String type = currentToken.value();
+
+            expectPeek(TokenType.IDENT);
+            String name = currentToken.value();
+            symbolTable.define(name, type, kind);
+
+            while (peekTokenIs(TokenType.COMMA)) {
+                expectPeek(TokenType.COMMA);
+                expectPeek(TokenType.INT, TokenType.CHAR, TokenType.BOOLEAN, TokenType.IDENT);
+                type = currentToken.value();
+
+                expectPeek(TokenType.IDENT);
+                name = currentToken.value();
+
+                symbolTable.define(name, type, kind);
+            }
+
+        }
+
+        printNonTerminal("/parameterList");
+    }
 
      void parseTerm() {
         printNonTerminal("term");

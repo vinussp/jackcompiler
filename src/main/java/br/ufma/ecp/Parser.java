@@ -1,10 +1,9 @@
 package br.ufma.ecp;
 
-import javax.swing.text.Segment;
-
 import br.ufma.ecp.SymbolTable.Kind;
 import br.ufma.ecp.token.Token;
 import br.ufma.ecp.token.TokenType;
+
 
 public class Parser {
 
@@ -16,9 +15,12 @@ public class Parser {
      private StringBuilder xmlOutput = new StringBuilder();
      private String className;
      private SymbolTable symbolTable;
+     private VMWriter vmWriter;
  
      public Parser(byte[] input) {
          scan = new Scanner(input);
+         symbolTable = new SymbolTable();
+         vmWriter = new VMWriter();
          nextToken();
      }
  
@@ -61,33 +63,6 @@ public class Parser {
 
         printNonTerminal("/parameterList");
     }
-
-     void parseSubroutineBody(String functionName, TokenType subroutineType) {
-
-        printNonTerminal("subroutineBody");
-        expectPeek(TokenType.LBRACE);
-        while (peekTokenIs(TokenType.VAR)) {
-            parseVarDec();
-        }
-        var nlocals = symbolTable.varCount(Kind.VAR);
-
-        vmWriter.writeFunction(functionName, nlocals);
-
-        if (subroutineType == CONSTRUCTOR) {
-            vmWriter.writePush(Segment.CONST, symbolTable.varCount(Kind.FIELD));
-            vmWriter.writeCall("Memory.alloc", 1);
-            vmWriter.writePop(Segment.POINTER, 0);
-        }
-
-        if (subroutineType == METHOD) {
-            vmWriter.writePush(Segment.ARG, 0);
-            vmWriter.writePop(Segment.POINTER, 0);
-        }
-
-        parseStatements();
-        expectPeek(TokenType.RBRACE);
-        printNonTerminal("/subroutineBody");
-     }
 
      void parseTerm() {
         printNonTerminal("term");

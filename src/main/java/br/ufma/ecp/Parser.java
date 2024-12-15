@@ -167,6 +167,19 @@ public class Parser {
                 throw error(peekToken, "Expected a statement");
         }
      }
+
+     void parseStatements() {
+        printNonTerminal("statements");
+        while (peekToken.type == WHILE ||
+                peekToken.type == IF ||
+                peekToken.type == LET ||
+                peekToken.type == DO ||
+                peekToken.type == RETURN) {
+            parseStatement();
+        }
+
+        printNonTerminal("/statements");
+    }
  
      // funções auxiliares
 

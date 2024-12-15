@@ -2,34 +2,8 @@ package br.ufma.ecp;
 
 import br.ufma.ecp.token.Token;
 import br.ufma.ecp.token.TokenType;
-import static br.ufma.ecp.token.TokenType.BOOLEAN;
-import static br.ufma.ecp.token.TokenType.CHAR;
-import static br.ufma.ecp.token.TokenType.COMMA;
-import static br.ufma.ecp.token.TokenType.CONSTRUCTOR;
-import static br.ufma.ecp.token.TokenType.DO;
-import static br.ufma.ecp.token.TokenType.EQ;
-import static br.ufma.ecp.token.TokenType.FALSE;
-import static br.ufma.ecp.token.TokenType.IDENT;
-import static br.ufma.ecp.token.TokenType.IF;
-import static br.ufma.ecp.token.TokenType.INT;
-import static br.ufma.ecp.token.TokenType.LBRACE;
-import static br.ufma.ecp.token.TokenType.LBRACKET;
-import static br.ufma.ecp.token.TokenType.LET;
-import static br.ufma.ecp.token.TokenType.LPAREN;
-import static br.ufma.ecp.token.TokenType.NULL;
-import static br.ufma.ecp.token.TokenType.NUMBER;
-import static br.ufma.ecp.token.TokenType.RBRACE;
-import static br.ufma.ecp.token.TokenType.RBRACKET;
-import static br.ufma.ecp.token.TokenType.RETURN;
-import static br.ufma.ecp.token.TokenType.RPAREN;
-import static br.ufma.ecp.token.TokenType.SEMICOLON;
-import static br.ufma.ecp.token.TokenType.STRING;
-import static br.ufma.ecp.token.TokenType.THIS;
-import static br.ufma.ecp.token.TokenType.TRUE;
-import static br.ufma.ecp.token.TokenType.VAR;
-import static br.ufma.ecp.token.TokenType.WHILE;
-import static br.ufma.ecp.token.TokenType.ELSE;
 
+import static br.ufma.ecp.token.TokenType.*;
 
 
 public class Parser {
@@ -58,7 +32,60 @@ public class Parser {
          
      }
 
-     void parseParameterList() {
+
+     public void parseClassVarDec () {
+        printNonTerminal("classVarDec");
+        expectPeek(FIELD,STATIC);
+        // 'int' | 'char' | 'boolean' | className
+        expectPeek(INT,CHAR,BOOLEAN,IDENT);
+        expectPeek(IDENT);
+        while (peekTokenIs(COMMA)) {
+            expectPeek(COMMA);
+            expectPeek(IDENT);
+        }
+        expectPeek(SEMICOLON);
+        printNonTerminal("/classVarDec");
+    }
+
+    public void parseSubroutineCall () {
+        if (peekTokenIs (LPAREN)) {
+            expectPeek(LPAREN);
+            parseExpression();
+            expectPeek(RPAREN);
+        } else {
+            // pode ser um metodo de um outro objeto ou uma função
+            expectPeek(DOT);
+            expectPeek(IDENT);
+            expectPeek(LPAREN);
+            parseExpression();
+            expectPeek(RPAREN);
+        }
+    }
+    public void parseDo () {
+        printNonTerminal("doStatement");
+        expectPeek(DO);
+        expectPeek(IDENT);
+        parseSubroutineCall();
+        expectPeek(SEMICOLON);
+        printNonTerminal("/doStatement");
+    }
+
+    public void parseSubroutineDec () {
+        printNonTerminal("classVarDec");
+        expectPeek(CONSTRUCTOR, FUNCTION, METHOD);
+        // 'int' | 'char' | 'boolean' | className
+        expectPeek(VOID, INT,CHAR,BOOLEAN,IDENT);
+        expectPeek(IDENT);
+        expectPeek(LPAREN);
+        parseParameterList();
+        expectPeek(RPAREN);
+        parseSubroutineBody();
+        printNonTerminal("/classVarDec");
+    }
+
+
+
+    void parseParameterList() {
         printNonTerminal("parameterList");
 
         if (!peekTokenIs(RPAREN))
@@ -112,6 +139,20 @@ public class Parser {
     
         printNonTerminal("/term");
       }
+
+    public void parseExpressionList() {
+        printNonTerminal("expressionList");
+        if (!peekTokenIs(RPAREN))
+        {
+            parseExpression();
+        }
+
+        while (peekTokenIs(COMMA)) {
+            expectPeek(COMMA);
+            parseExpression();
+        }
+        printNonTerminal("/expressionList");
+    }
 
       void parseExpression() {
         printNonTerminal("expression");

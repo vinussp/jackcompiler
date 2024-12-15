@@ -1,7 +1,10 @@
 package br.ufma.ecp;
 
+import static br.ufma.ecp.token.TokenType.*;
+
 import br.ufma.ecp.token.Token;
 import br.ufma.ecp.token.TokenType;
+
 
 public class Parser {
 
@@ -11,6 +14,7 @@ public class Parser {
      private Token currentToken;
      private Token peekToken;
      private StringBuilder xmlOutput = new StringBuilder();
+    private String className;
  
      public Parser(byte[] input) {
          scan = new Scanner(input);
@@ -24,10 +28,29 @@ public class Parser {
  
  
      public void parse () {
-         
+         parseClass();
      }
+    public void parseClass() {
+        printNonTerminal("class");
+        expectPeek(CLASS);
+        expectPeek(IDENT);
+        className = currentToken.value();
+        expectPeek(LBRACE);
 
-     void parseTerm() {
+        while (peekTokenIs(STATIC) || peekTokenIs(FIELD)) {
+            parseClassVarDec();
+        }
+
+        while (peekTokenIs(FUNCTION) || peekTokenIs(CONSTRUCTOR) || peekTokenIs(METHOD)) {
+            parseSubroutineDec();
+        }
+
+        expectPeek(RBRACE);
+
+        printNonTerminal("/class");
+    }
+
+     public void parseTerm() {
         printNonTerminal("term");
         switch (peekToken.type) {
           case NUMBER:
@@ -54,7 +77,7 @@ public class Parser {
         printNonTerminal("/term");
       }
 
-      void parseExpression() {
+      public void parseExpression() {
         printNonTerminal("expression");
         parseTerm ();
         while (isOperator(peekToken.lexeme)) {
@@ -64,7 +87,7 @@ public class Parser {
         printNonTerminal("/expression");
       }
 
-     void parseLet() {
+     public void parseLet() {
         printNonTerminal("letStatement");
         expectPeek(TokenType.LET);
         expectPeek(TokenType.IDENT);

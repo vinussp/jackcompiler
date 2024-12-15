@@ -16,7 +16,6 @@ import static br.ufma.ecp.token.TokenType.LBRACE;
 import static br.ufma.ecp.token.TokenType.LBRACKET;
 import static br.ufma.ecp.token.TokenType.LET;
 import static br.ufma.ecp.token.TokenType.LPAREN;
-import static br.ufma.ecp.token.TokenType.METHOD;
 import static br.ufma.ecp.token.TokenType.NULL;
 import static br.ufma.ecp.token.TokenType.NUMBER;
 import static br.ufma.ecp.token.TokenType.RBRACE;
@@ -29,6 +28,7 @@ import static br.ufma.ecp.token.TokenType.THIS;
 import static br.ufma.ecp.token.TokenType.TRUE;
 import static br.ufma.ecp.token.TokenType.VAR;
 import static br.ufma.ecp.token.TokenType.WHILE;
+import static br.ufma.ecp.token.TokenType.ELSE;
 
 
 
@@ -157,8 +157,27 @@ public class Parser {
         parseExpression();
         expectPeek(RPAREN);
         expectPeek(LBRACE);
+        parseStatements();
         expectPeek(RBRACE);
         printNonTerminal("/whileStatement");
+    }
+
+    void parseIf() {
+        printNonTerminal("ifStatement"); 
+        expectPeek(IF);
+        expectPeek(LPAREN);
+        parseExpression();
+        expectPeek(RPAREN);
+        expectPeek(LBRACE);
+        parseStatements();
+        expectPeek(RBRACE);
+        expectPeek(ELSE);
+        expectPeek(LBRACE);
+        parseStatements();
+        expectPeek(RBRACE);
+
+
+        printNonTerminal("/ifStatement");
     }
 
     void parseStatement() {

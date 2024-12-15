@@ -136,6 +136,40 @@ public class Parser {
         expectPeek(TokenType.SEMICOLON); // ';'
         printNonTerminal("/varDec");
     }
+    
+    void parseClassVarDec() {
+        printNonTerminal("classVarDec");
+    
+        if (peekTokenIs(TokenType.FIELD) || peekTokenIs(TokenType.STATIC)) {
+            nextToken();
+            xmlOutput.append(String.format("<keyword> %s </keyword>\r\n", currentToken.lexeme));
+        } else {
+            throw error(peekToken, "Expected 'field' or 'static'");
+        }
+    
+        parseType();
+        parseVarName();
+    
+        while (peekTokenIs(TokenType.COMMA)) {
+            expectPeek(TokenType.COMMA);
+            parseVarName();
+        }
+    
+        expectPeek(TokenType.SEMICOLON);
+    
+        printNonTerminal("/classVarDec");
+    }
+
+    void parseType() {
+    if (peekTokenIs(TokenType.INT) || peekTokenIs(TokenType.CHAR) || peekTokenIs(TokenType.BOOLEAN)) {
+        nextToken();
+        xmlOutput.append(String.format("<keyword> %s </keyword>\r\n", currentToken.lexeme));
+    } else if (peekTokenIs(TokenType.IDENT)) {
+        parseVarName();
+    } else {
+        throw error(peekToken, "Expected a type");
+    }
+    }
 
      void parseSubroutineBody(String functionName, TokenType subroutineType) {
 

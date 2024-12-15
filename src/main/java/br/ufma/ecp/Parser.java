@@ -64,7 +64,7 @@ public class Parser {
 
         if (peekTokenIs(LPAREN)) { // método da propria classe
             expectPeek(LPAREN);
-            vmWriter.writePush(Segment.POINTER, 0);
+            vmWriter.writePush(VMWriter.Segment.POINTER, 0);
             nArgs = parseExpressionList() + 1;
             expectPeek(RPAREN);
             functionName = className + "." + ident;
@@ -88,6 +88,17 @@ public class Parser {
         }
 
         vmWriter.writeCall(functionName, nArgs);
+    }
+
+    void parseDo() {
+        printNonTerminal("doStatement");
+        expectPeek(DO);
+        expectPeek(IDENT);
+        parseSubroutineCall();
+        expectPeek(SEMICOLON);
+        vmWriter.writePop(VMWriter.Segment.TEMP, 0);
+
+        printNonTerminal("/doStatement");
     }
 
      public void parseTerm() {

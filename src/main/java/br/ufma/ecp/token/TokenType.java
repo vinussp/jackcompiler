@@ -38,6 +38,7 @@ public enum TokenType {
         String symbols = "{}()[].,;+-*/&|<>=~";
         return symbols.indexOf(c) > -1;
     }
+    public String value;
 
 
     static public boolean isKeyword (TokenType type) {

@@ -10,6 +10,9 @@ public class Token {
         this.lexeme = lexeme;
         this.line = line;
     }
+    public String value () {
+        return type.value;
+    }
 
     public String toString() {
         var type = this.type.toString();

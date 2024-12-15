@@ -57,4 +57,8 @@ public class VMWriter {
         vmOutput.append(String.format("call %s %d\n", name, nArgs));
     }
 
+    void writeReturn() {
+        vmOutput.append(String.format("return\n"));
+    }
+
 }

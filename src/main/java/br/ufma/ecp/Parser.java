@@ -2,9 +2,12 @@ package br.ufma.ecp;
 
 import static br.ufma.ecp.token.TokenType.*;
 
+import br.ufma.ecp.SymbolTable.Kind;
+import br.ufma.ecp.SymbolTable.Symbol;
+import br.ufma.ecp.VMWriter.Command;
+import br.ufma.ecp.VMWriter.Segment;
 import br.ufma.ecp.token.Token;
 import br.ufma.ecp.token.TokenType;
-
 
 public class Parser {
 
@@ -17,12 +20,18 @@ public class Parser {
      private String className;
      private VMWriter vmWriter;
      private SymbolTable symbolTable;
+    private int ifLabelNum;
+    private int whileLabelNum;
  
      public Parser(byte[] input) {
          scan = new Scanner(input);
          symbolTable = new SymbolTable();
          vmWriter = new VMWriter();
+
          nextToken();
+
+         ifLabelNum = 0;
+         whileLabelNum = 0;
      }
  
      private void nextToken() {
@@ -64,7 +73,7 @@ public class Parser {
 
         if (peekTokenIs(LPAREN)) { // método da propria classe
             expectPeek(LPAREN);
-            vmWriter.writePush(VMWriter.Segment.POINTER, 0);
+            vmWriter.writePush(Segment.POINTER, 0);
             nArgs = parseExpressionList() + 1;
             expectPeek(RPAREN);
             functionName = className + "." + ident;
@@ -90,16 +99,102 @@ public class Parser {
         vmWriter.writeCall(functionName, nArgs);
     }
 
-    void parseDo() {
+    public void parseDo() {
         printNonTerminal("doStatement");
         expectPeek(DO);
         expectPeek(IDENT);
         parseSubroutineCall();
         expectPeek(SEMICOLON);
-        vmWriter.writePop(VMWriter.Segment.TEMP, 0);
+        vmWriter.writePop(Segment.TEMP, 0);
 
         printNonTerminal("/doStatement");
     }
+
+    public void parseVarDec() {
+        printNonTerminal("varDec");
+        expectPeek(VAR);
+
+        SymbolTable.Kind kind = SymbolTable.Kind.VAR;
+
+        // 'int' | 'char' | 'boolean' | className
+        expectPeek(INT, CHAR, BOOLEAN, IDENT);
+        String type = currentToken.value();
+
+        expectPeek(IDENT);
+        String name = currentToken.value();
+        symbolTable.define(name, type, kind);
+
+        while (peekTokenIs(COMMA)) {
+            expectPeek(COMMA);
+            expectPeek(IDENT);
+
+            name = currentToken.value();
+            symbolTable.define(name, type, kind);
+
+        }
+
+        expectPeek(SEMICOLON);
+        printNonTerminal("/varDec");
+    }
+
+    public void parseClassVarDec() {
+        printNonTerminal("classVarDec");
+        expectPeek(FIELD, STATIC);
+
+        SymbolTable.Kind kind = Kind.STATIC;
+        if (currentTokenIs(FIELD))
+            kind = Kind.FIELD;
+
+        // 'int' | 'char' | 'boolean' | className
+        expectPeek(INT, CHAR, BOOLEAN, IDENT);
+        String type = currentToken.value();
+
+        expectPeek(IDENT);
+        String name = currentToken.value();
+
+        symbolTable.define(name, type, kind);
+        while (peekTokenIs(COMMA)) {
+            expectPeek(COMMA);
+            expectPeek(IDENT);
+
+            name = currentToken.value();
+            symbolTable.define(name, type, kind);
+        }
+
+        expectPeek(SEMICOLON);
+        printNonTerminal("/classVarDec");
+    }
+
+    void parseSubroutineDec() {
+        printNonTerminal("subroutineDec");
+
+        ifLabelNum = 0;
+        whileLabelNum = 0;
+
+        symbolTable.startSubroutine();
+
+        expectPeek(CONSTRUCTOR, FUNCTION, METHOD);
+        var subroutineType = currentToken.type;
+
+        if (subroutineType == METHOD) {
+            symbolTable.define("this", className, Kind.ARG);
+        }
+
+        // 'int' | 'char' | 'boolean' | className
+        expectPeek(VOID, INT, CHAR, BOOLEAN, IDENT);
+        expectPeek(IDENT);
+
+        var functionName = className + "." + currentToken.value();
+
+        expectPeek(LPAREN);
+        parseParameterList();
+        expectPeek(RPAREN);
+        parseSubroutineBody(functionName, subroutineType);
+
+        printNonTerminal("/subroutineDec");
+    }
+
+
 
      public void parseTerm() {
         printNonTerminal("term");
@@ -216,6 +311,17 @@ public class Parser {
          }
          return new ParseError();
      }
+    private Segment kind2Segment(Kind kind) {
+        if (kind == Kind.STATIC)
+            return Segment.STATIC;
+        if (kind == Kind.FIELD)
+            return Segment.THIS;
+        if (kind == Kind.VAR)
+            return Segment.LOCAL;
+        if (kind == Kind.ARG)
+            return Segment.ARG;
+        return null;
+    }
  
  
  }

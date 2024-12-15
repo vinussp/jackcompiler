@@ -13,13 +13,13 @@ public class VMWriter {
         POINTER("pointer"),
         TEMP("temp");
     
-        private final String value; // Alterado para "private"
+        private final String value; 
     
         private Segment(String value) {
             this.value = value;
         }
     
-        public String getValue() { // Getter para acessar o valor
+        public String getValue() { 
             return value;
         }
     };

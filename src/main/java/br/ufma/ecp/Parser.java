@@ -1,6 +1,9 @@
 package br.ufma.ecp;
 
 import br.ufma.ecp.SymbolTable.Kind;
+import br.ufma.ecp.SymbolTable.Symbol;
+import br.ufma.ecp.VMWriter.Command;
+import br.ufma.ecp.VMWriter.Segment;
 import br.ufma.ecp.token.Token;
 import br.ufma.ecp.token.TokenType;
 
@@ -64,6 +67,31 @@ public class Parser {
         printNonTerminal("/parameterList");
     }
 
+    void parseSubroutineBody(String functionName, TokenType subroutineType) {
+
+        printNonTerminal("subroutineBody");
+        expectPeek(TokenType.LBRACE);
+        while (peekTokenIs(TokenType.VAR)) {
+            parseVarDec();
+        }
+        var nlocals = symbolTable.varCount(Kind.VAR);
+
+        vmWriter.writeFunction(functionName, nlocals);
+
+        if (subroutineType == TokenType.CONSTRUCTOR) {
+            vmWriter.writePush(Segment.POINTER, symbolTable.varCount(Kind.FIELD));
+            vmWriter.writeCall("Memory.alloc", 1);
+            vmWriter.writePop(Segment.POINTER, 0);
+        }
+
+        if (subroutineType == TokenType.METHOD) {
+            vmWriter.writePush(Segment.POINTER, 0);
+            vmWriter.writePop(Segment.POINTER, 0);
+        }
+        expectPeek(TokenType.RBRACE);
+        printNonTerminal("/subroutineBody");
+     }
+
      void parseTerm() {
         printNonTerminal("term");
         switch (peekToken.type) {
@@ -118,29 +146,26 @@ public class Parser {
         printNonTerminal("/letStatement");
      }
 
-     void parseSubroutineBody(String functionName, TokenType subroutineType) {
-
-        printNonTerminal("subroutineBody");
-        expectPeek(TokenType.LBRACE);
-        while (peekTokenIs(TokenType.VAR)) {
-            parseVarDec();
+     void parseStatement() {
+        switch (peekToken.type) {
+            case LET:
+                parseLet();
+                break;
+                case WHILE:
+                parseWhile();
+                break;
+            case IF:
+                parseIf();
+                break;
+            case RETURN:
+                parseReturn();
+                break;
+            case DO:
+                parseDo();
+                break;
+            default:
+                throw error(peekToken, "Expected a statement");
         }
-        var nlocals = symbolTable.varCount(Kind.VAR);
-
-        vmWriter.writeFunction(functionName, nlocals);
-
-        if (subroutineType == TokenType.CONSTRUCTOR) {
-            vmWriter.writePush(VMWriter.Segment.POINTER, symbolTable.varCount(Kind.FIELD));
-            vmWriter.writeCall("Memory.alloc", 1);
-            vmWriter.writePop(VMWriter.Segment.POINTER, 0);
-        }
-
-        if (subroutineType == TokenType.METHOD) {
-            vmWriter.writePush(VMWriter.Segment.POINTER, 0);
-            vmWriter.writePop(VMWriter.Segment.POINTER, 0);
-        }
-        expectPeek(TokenType.RBRACE);
-        printNonTerminal("/subroutineBody");
      }
  
      // funções auxiliares

@@ -118,6 +118,25 @@ public class Parser {
         printNonTerminal("/letStatement");
      }
 
+     void parseVarName() {
+        expectPeek(TokenType.IDENT);
+    }
+    
+     void parseVarDec() {
+        printNonTerminal("varDec");
+        expectPeek(TokenType.VAR); 
+        parseType();               
+        parseVarName();            
+    
+        while (peekTokenIs(TokenType.COMMA)) {
+            expectPeek(TokenType.COMMA);
+            parseVarName();
+        }
+    
+        expectPeek(TokenType.SEMICOLON); // ';'
+        printNonTerminal("/varDec");
+    }
+
      void parseSubroutineBody(String functionName, TokenType subroutineType) {
 
         printNonTerminal("subroutineBody");

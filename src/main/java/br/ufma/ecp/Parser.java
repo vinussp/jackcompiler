@@ -14,10 +14,14 @@ public class Parser {
      private Token currentToken;
      private Token peekToken;
      private StringBuilder xmlOutput = new StringBuilder();
-    private String className;
+     private String className;
+     private VMWriter vmWriter;
+     private SymbolTable symbolTable;
  
      public Parser(byte[] input) {
          scan = new Scanner(input);
+         symbolTable = new SymbolTable();
+         vmWriter = new VMWriter();
          nextToken();
      }
  
@@ -48,6 +52,42 @@ public class Parser {
         expectPeek(RBRACE);
 
         printNonTerminal("/class");
+    }
+
+    public void parseSubroutineCall() {
+
+        var nArgs = 0;
+
+        var ident = currentToken.value();
+        var symbol = symbolTable.resolve(ident); // classe ou objeto
+        var functionName = ident + ".";
+
+        if (peekTokenIs(LPAREN)) { // método da propria classe
+            expectPeek(LPAREN);
+            vmWriter.writePush(Segment.POINTER, 0);
+            nArgs = parseExpressionList() + 1;
+            expectPeek(RPAREN);
+            functionName = className + "." + ident;
+        } else {
+            // pode ser um metodo de um outro objeto ou uma função
+            expectPeek(DOT);
+            expectPeek(IDENT); // nome da função
+
+            if (symbol != null) { // é um metodo
+                functionName = symbol.type() + "." + currentToken.value();
+                vmWriter.writePush(kind2Segment(symbol.kind()), symbol.index());
+                nArgs = 1; // do proprio objeto
+            } else {
+                functionName += currentToken.value(); // é uma função
+            }
+
+            expectPeek(LPAREN);
+            nArgs += parseExpressionList();
+
+            expectPeek(RPAREN);
+        }
+
+        vmWriter.writeCall(functionName, nArgs);
     }
 
      public void parseTerm() {

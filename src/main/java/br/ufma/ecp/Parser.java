@@ -1,8 +1,35 @@
 package br.ufma.ecp;
 
-import br.ufma.ecp.SymbolTable.Kind;
 import br.ufma.ecp.token.Token;
 import br.ufma.ecp.token.TokenType;
+import static br.ufma.ecp.token.TokenType.BOOLEAN;
+import static br.ufma.ecp.token.TokenType.CHAR;
+import static br.ufma.ecp.token.TokenType.COMMA;
+import static br.ufma.ecp.token.TokenType.CONSTRUCTOR;
+import static br.ufma.ecp.token.TokenType.DO;
+import static br.ufma.ecp.token.TokenType.EQ;
+import static br.ufma.ecp.token.TokenType.FALSE;
+import static br.ufma.ecp.token.TokenType.IDENT;
+import static br.ufma.ecp.token.TokenType.IF;
+import static br.ufma.ecp.token.TokenType.INT;
+import static br.ufma.ecp.token.TokenType.LBRACE;
+import static br.ufma.ecp.token.TokenType.LBRACKET;
+import static br.ufma.ecp.token.TokenType.LET;
+import static br.ufma.ecp.token.TokenType.LPAREN;
+import static br.ufma.ecp.token.TokenType.NULL;
+import static br.ufma.ecp.token.TokenType.NUMBER;
+import static br.ufma.ecp.token.TokenType.RBRACE;
+import static br.ufma.ecp.token.TokenType.RBRACKET;
+import static br.ufma.ecp.token.TokenType.RETURN;
+import static br.ufma.ecp.token.TokenType.RPAREN;
+import static br.ufma.ecp.token.TokenType.SEMICOLON;
+import static br.ufma.ecp.token.TokenType.STRING;
+import static br.ufma.ecp.token.TokenType.THIS;
+import static br.ufma.ecp.token.TokenType.TRUE;
+import static br.ufma.ecp.token.TokenType.VAR;
+import static br.ufma.ecp.token.TokenType.WHILE;
+import static br.ufma.ecp.token.TokenType.ELSE;
+
 
 
 public class Parser {
@@ -14,13 +41,10 @@ public class Parser {
      private Token peekToken;
      private StringBuilder xmlOutput = new StringBuilder();
      private String className;
-     private SymbolTable symbolTable;
-     private VMWriter vmWriter;
+     private int ifLabelNum;
  
      public Parser(byte[] input) {
          scan = new Scanner(input);
-         symbolTable = new SymbolTable();
-         vmWriter = new VMWriter();
          nextToken();
      }
  
@@ -37,52 +61,50 @@ public class Parser {
      void parseParameterList() {
         printNonTerminal("parameterList");
 
-        SymbolTable.Kind kind = Kind.ARG;
-
-        if (!peekTokenIs(TokenType.RPAREN)) // verifica se tem pelo menos uma expressao
+        if (!peekTokenIs(RPAREN))
         {
-            expectPeek(TokenType.INT, TokenType.CHAR, TokenType.BOOLEAN, TokenType.IDENT);
-            String type = currentToken.value();
-
-            expectPeek(TokenType.IDENT);
-            String name = currentToken.value();
-            symbolTable.define(name, type, kind);
-
-            while (peekTokenIs(TokenType.COMMA)) {
-                expectPeek(TokenType.COMMA);
-                expectPeek(TokenType.INT, TokenType.CHAR, TokenType.BOOLEAN, TokenType.IDENT);
-                type = currentToken.value();
-
-                expectPeek(TokenType.IDENT);
-                name = currentToken.value();
-
-                symbolTable.define(name, type, kind);
+            expectPeek(INT, CHAR, BOOLEAN, IDENT);
+            expectPeek(IDENT);
+            while (peekTokenIs(COMMA)) {
+                expectPeek(COMMA);
+                expectPeek(INT, CHAR, BOOLEAN, IDENT);
             }
-
         }
 
         printNonTerminal("/parameterList");
+    }
+
+    void parseSubroutineBody(String functionName, TokenType subroutineType) {
+
+        printNonTerminal("subroutineBody");
+        expectPeek(LBRACE);
+
+        while (peekTokenIs(VAR)) {
+           // parseVarDec();
+        }
+        expectPeek(TokenType.RBRACE);
+        printNonTerminal("/subroutineBody");
     }
 
      void parseTerm() {
         printNonTerminal("term");
         switch (peekToken.type) {
           case NUMBER:
-            expectPeek(TokenType.NUMBER);
+            expectPeek(NUMBER);
             break;
           case STRING:
-            expectPeek(TokenType.STRING);
+            expectPeek(STRING);
             break;
           case FALSE:
           case NULL:
           case TRUE:
-            expectPeek(TokenType.FALSE, TokenType.NULL, TokenType.TRUE);
+            expectPeek(FALSE, NULL, TRUE);
             break;
           case THIS:
-            expectPeek(TokenType.THIS);
+            expectPeek(THIS);
             break;
           case IDENT:
-            expectPeek(TokenType.IDENT);
+            expectPeek(IDENT);
             break;
           default:
             throw error(peekToken, "term expected");
@@ -103,21 +125,22 @@ public class Parser {
 
      void parseLet() {
         printNonTerminal("letStatement");
-        expectPeek(TokenType.LET);
-        expectPeek(TokenType.IDENT);
+        expectPeek(LET);
+        expectPeek(IDENT);
 
-        if (peekTokenIs(TokenType.LBRACKET)) {
-            expectPeek(TokenType.LBRACKET);
+        if (peekTokenIs(LBRACKET)) {
+            expectPeek(LBRACKET);
             parseExpression();
-            expectPeek(TokenType.RBRACKET);
+            expectPeek(RBRACKET);
         }
 
-        expectPeek(TokenType.EQ);
+        expectPeek(EQ);
         parseExpression();
-        expectPeek(TokenType.SEMICOLON);
+        expectPeek(SEMICOLON);
         printNonTerminal("/letStatement");
      }
 
+<<<<<<< HEAD
      void parseVarName() {
         expectPeek(TokenType.IDENT);
     }
@@ -172,29 +195,82 @@ public class Parser {
     }
 
      void parseSubroutineBody(String functionName, TokenType subroutineType) {
+=======
+     void parseReturn() {
+        printNonTerminal("returnStatement");
+        expectPeek(RETURN);
+        if (!peekTokenIs(SEMICOLON)) {
+            parseExpression();
+            expectPeek(SEMICOLON);
+        printNonTerminal("/returnStatement");
+    }
+}
+>>>>>>> analisador-sintatico
 
-        printNonTerminal("subroutineBody");
-        expectPeek(TokenType.LBRACE);
-        while (peekTokenIs(TokenType.VAR)) {
-            parseVarDec();
+    void parseWhile() {
+        printNonTerminal("whileStatement");
+        expectPeek(WHILE);
+        expectPeek(LPAREN);
+        parseExpression();
+        expectPeek(RPAREN);
+        expectPeek(LBRACE);
+        parseStatements();
+        expectPeek(RBRACE);
+        printNonTerminal("/whileStatement");
+    }
+
+    void parseIf() {
+        printNonTerminal("ifStatement"); 
+        expectPeek(IF);
+        expectPeek(LPAREN);
+        parseExpression();
+        expectPeek(RPAREN);
+        expectPeek(LBRACE);
+        parseStatements();
+        expectPeek(RBRACE);
+        expectPeek(ELSE);
+        expectPeek(LBRACE);
+        parseStatements();
+        expectPeek(RBRACE);
+
+
+        printNonTerminal("/ifStatement");
+    }
+
+    void parseStatement() {
+        switch (peekToken.type) {
+            case LET:
+                parseLet();
+                break;
+            case WHILE:
+                parseWhile();
+                break;
+            case IF:
+                parseIf();
+                break;
+            case RETURN:
+                parseReturn();
+                break;
+            case DO:
+                parseDo();
+                break;
+            default:
+                throw error(peekToken, "Expected a statement");
         }
-        var nlocals = symbolTable.varCount(Kind.VAR);
+    }
 
-        vmWriter.writeFunction(functionName, nlocals);
-
-        if (subroutineType == TokenType.CONSTRUCTOR) {
-            vmWriter.writePush(VMWriter.Segment.POINTER, symbolTable.varCount(Kind.FIELD));
-            vmWriter.writeCall("Memory.alloc", 1);
-            vmWriter.writePop(VMWriter.Segment.POINTER, 0);
+     void parseStatements() {
+        printNonTerminal("statements");
+        while (peekToken.type == WHILE ||
+                peekToken.type == IF ||
+                peekToken.type == LET ||
+                peekToken.type == DO ||
+                peekToken.type == RETURN) {
+            parseStatement();
         }
 
-        if (subroutineType == TokenType.METHOD) {
-            vmWriter.writePush(VMWriter.Segment.POINTER, 0);
-            vmWriter.writePop(VMWriter.Segment.POINTER, 0);
-        }
-        expectPeek(TokenType.RBRACE);
-        printNonTerminal("/subroutineBody");
-     }
+        printNonTerminal("/statements");
+    }
  
      // funções auxiliares
 

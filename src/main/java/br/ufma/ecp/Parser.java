@@ -1,7 +1,5 @@
 package br.ufma.ecp;
 
-import br.ufma.ecp.SymbolTable.Kind;
-import br.ufma.ecp.VMWriter.Segment;
 import br.ufma.ecp.token.Token;
 import br.ufma.ecp.token.TokenType;
 import static br.ufma.ecp.token.TokenType.BOOLEAN;
@@ -9,7 +7,6 @@ import static br.ufma.ecp.token.TokenType.CHAR;
 import static br.ufma.ecp.token.TokenType.COMMA;
 import static br.ufma.ecp.token.TokenType.CONSTRUCTOR;
 import static br.ufma.ecp.token.TokenType.DO;
-import static br.ufma.ecp.token.TokenType.ELSE;
 import static br.ufma.ecp.token.TokenType.EQ;
 import static br.ufma.ecp.token.TokenType.FALSE;
 import static br.ufma.ecp.token.TokenType.IDENT;
@@ -30,8 +27,8 @@ import static br.ufma.ecp.token.TokenType.SEMICOLON;
 import static br.ufma.ecp.token.TokenType.STRING;
 import static br.ufma.ecp.token.TokenType.THIS;
 import static br.ufma.ecp.token.TokenType.TRUE;
-import static br.ufma.ecp.token.TokenType.WHILE;
 import static br.ufma.ecp.token.TokenType.VAR;
+import static br.ufma.ecp.token.TokenType.WHILE;
 
 
 
@@ -45,13 +42,9 @@ public class Parser {
      private StringBuilder xmlOutput = new StringBuilder();
      private String className;
      private int ifLabelNum;
-     private SymbolTable symbolTable;
-     private VMWriter vmWriter;
  
      public Parser(byte[] input) {
          scan = new Scanner(input);
-         symbolTable = new SymbolTable();
-         vmWriter = new VMWriter();
          nextToken();
      }
  
@@ -68,28 +61,14 @@ public class Parser {
      void parseParameterList() {
         printNonTerminal("parameterList");
 
-        SymbolTable.Kind kind = Kind.ARG;
-
-        if (!peekTokenIs(RPAREN)) // verifica se tem pelo menos uma expressao
+        if (!peekTokenIs(RPAREN))
         {
             expectPeek(INT, CHAR, BOOLEAN, IDENT);
-            String type = currentToken.value();
-
             expectPeek(IDENT);
-            String name = currentToken.value();
-            symbolTable.define(name, type, kind);
-
             while (peekTokenIs(COMMA)) {
                 expectPeek(COMMA);
                 expectPeek(INT, CHAR, BOOLEAN, IDENT);
-                type = currentToken.value();
-
-                expectPeek(IDENT);
-                name = currentToken.value();
-
-                symbolTable.define(name, type, kind);
             }
-
         }
 
         printNonTerminal("/parameterList");
@@ -101,22 +80,7 @@ public class Parser {
         expectPeek(LBRACE);
 
         while (peekTokenIs(VAR)) {
-            parseVarDec();
-        }
-
-        var nlocals = symbolTable.varCount(Kind.VAR);
-
-        vmWriter.writeFunction(functionName, nlocals);
-
-        if (subroutineType == CONSTRUCTOR) {
-            vmWriter.writePush(Segment.POINTER, symbolTable.varCount(Kind.FIELD));
-            vmWriter.writeCall("Memory.alloc", 1);
-            vmWriter.writePop(Segment.POINTER, 0);
-        }
-
-        if (subroutineType == METHOD) {
-            vmWriter.writePush(Segment.POINTER, 0);
-            vmWriter.writePop(Segment.POINTER, 0);
+           // parseVarDec();
         }
         expectPeek(TokenType.RBRACE);
         printNonTerminal("/subroutineBody");
@@ -181,25 +145,32 @@ public class Parser {
         expectPeek(RETURN);
         if (!peekTokenIs(SEMICOLON)) {
             parseExpression();
-        } else {
-            vmWriter.writePush(Segment.CONST, 0);
-        }
-        expectPeek(SEMICOLON);
-        vmWriter.writeReturn();
-
+            expectPeek(SEMICOLON);
         printNonTerminal("/returnStatement");
     }
+}
 
-     void parseStatement() {
+    void parseWhile() {
+        printNonTerminal("whileStatement");
+        expectPeek(WHILE);
+        expectPeek(LPAREN);
+        parseExpression();
+        expectPeek(RPAREN);
+        expectPeek(LBRACE);
+        expectPeek(RBRACE);
+        printNonTerminal("/whileStatement");
+    }
+
+    void parseStatement() {
         switch (peekToken.type) {
             case LET:
                 parseLet();
                 break;
-            case IF:
-                parseIf();
-                break;
             case WHILE:
                 parseWhile();
+                break;
+            case IF:
+                parseIf();
                 break;
             case RETURN:
                 parseReturn();
@@ -210,7 +181,7 @@ public class Parser {
             default:
                 throw error(peekToken, "Expected a statement");
         }
-     }
+    }
 
      void parseStatements() {
         printNonTerminal("statements");

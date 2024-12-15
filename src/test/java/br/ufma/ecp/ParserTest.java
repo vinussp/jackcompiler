@@ -104,7 +104,7 @@ public class ParserTest extends TestSupport {
     
     @Test
     public void testParseLet() {
-        var input = "let square = Square.new(0, 0, 30);";
+        var input = "let string = 30;";
         var parser = new Parser(input.getBytes(StandardCharsets.UTF_8));
         parser.parseLet();
         var expectedResult =  """

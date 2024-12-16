@@ -344,6 +344,7 @@ public class Parser {
     void parseVarName() {
         expectPeek(IDENT);
     }
+    
 
     static public boolean isOperator(String op) {
         return op != "" && "+-*/<>=~&|".contains(op);

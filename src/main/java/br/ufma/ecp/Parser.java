@@ -29,8 +29,7 @@ import static br.ufma.ecp.token.TokenType.TRUE;
 import static br.ufma.ecp.token.TokenType.VAR;
 import static br.ufma.ecp.token.TokenType.WHILE;
 import static br.ufma.ecp.token.TokenType.ELSE;
-
-
+ 
 
 public class Parser {
 
@@ -140,7 +139,6 @@ public class Parser {
         printNonTerminal("/letStatement");
      }
 
-<<<<<<< HEAD
      void parseVarName() {
         expectPeek(TokenType.IDENT);
     }
@@ -194,9 +192,7 @@ public class Parser {
     }
     }
 
-     void parseSubroutineBody(String functionName, TokenType subroutineType) {
-=======
-     void parseReturn() {
+    void parseReturn() {
         printNonTerminal("returnStatement");
         expectPeek(RETURN);
         if (!peekTokenIs(SEMICOLON)) {
@@ -204,9 +200,7 @@ public class Parser {
             expectPeek(SEMICOLON);
         printNonTerminal("/returnStatement");
     }
-}
->>>>>>> analisador-sintatico
-
+    }
     void parseWhile() {
         printNonTerminal("whileStatement");
         expectPeek(WHILE);

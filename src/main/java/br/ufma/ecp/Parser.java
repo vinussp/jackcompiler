@@ -109,7 +109,6 @@ public class Parser {
 
     void parseSubroutineDec() {
         printNonTerminal("subroutineDec");
-
         expectPeek(CONSTRUCTOR, FUNCTION, METHOD);
         parseType(); // return type or class name
         parseVarName(); // subroutine name

@@ -110,17 +110,24 @@ public class Parser {
     void parseSubroutineDec() {
         printNonTerminal("subroutineDec");
         expectPeek(CONSTRUCTOR, FUNCTION, METHOD);
-        parseType(); // return type or class name
-        parseVarName(); // subroutine name
+        
+        if ( peekTokenIs(INT) || peekTokenIs(CHAR) || peekTokenIs(BOOLEAN)) {
+            parseType();
+        } else {
+            parseVarName();
+        }
+    
+        parseVarName();
 
         expectPeek(LPAREN);
         parseParameterList();
         expectPeek(RPAREN);
-
+        
         parseSubroutineBody();
-
+    
         printNonTerminal("/subroutineDec");
     }
+    
 
     void parseSubroutineBody() {
         printNonTerminal("subroutineBody");
@@ -206,13 +213,18 @@ public class Parser {
     void parseDo() {
         printNonTerminal("doStatement");
         expectPeek(DO);
-        parseVarName();
-        expectPeek(DOT);
-        parseVarName();
+    
+        parseVarName(); 
+        if (peekTokenIs(DOT)) {
+            expectPeek(DOT);
+            parseVarName();
+        }
+    
         expectPeek(LPAREN);
         parseExpressionList();
         expectPeek(RPAREN);
         expectPeek(SEMICOLON);
+    
         printNonTerminal("/doStatement");
     }
 

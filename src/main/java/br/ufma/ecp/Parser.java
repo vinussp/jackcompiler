@@ -4,6 +4,7 @@ import br.ufma.ecp.token.Token;
 import br.ufma.ecp.token.TokenType;
 import static br.ufma.ecp.token.TokenType.BOOLEAN;
 import static br.ufma.ecp.token.TokenType.CHAR;
+import static br.ufma.ecp.token.TokenType.CLASS;
 import static br.ufma.ecp.token.TokenType.COMMA;
 import static br.ufma.ecp.token.TokenType.CONSTRUCTOR;
 import static br.ufma.ecp.token.TokenType.DO;
@@ -35,6 +36,7 @@ import static br.ufma.ecp.token.TokenType.TRUE;
 import static br.ufma.ecp.token.TokenType.VAR;
 import static br.ufma.ecp.token.TokenType.WHILE;
 
+
 public class Parser {
 
     private static class ParseError extends RuntimeException {}
@@ -50,13 +52,44 @@ public class Parser {
         scan = new Scanner(input);
         nextToken();
     }
-
     private void nextToken() {
         currentToken = peekToken;
         peekToken = scan.nextToken();
     }
+    public void parse () {
+         parseClass();
+     }
 
-    public void parse() {}
+    public void parseClass() {
+        printNonTerminal("class");
+        expectPeek(CLASS);
+        expectPeek(IDENT);
+        expectPeek(LBRACE);
+        while (peekTokenIs(STATIC) || peekTokenIs(FIELD)) {
+            parseClassVarDec();
+        }
+        while (peekTokenIs(FUNCTION) || peekTokenIs(CONSTRUCTOR) || peekTokenIs(METHOD)) {
+            parseSubroutineDec();
+        }
+        expectPeek(RBRACE);
+        printNonTerminal("/class");
+    }
+
+    public void parseSubroutineCall () {
+        if (peekTokenIs (LPAREN)) {
+            expectPeek(LPAREN);
+            parseExpression();
+            expectPeek(RPAREN);
+        } else {
+            // pode ser um metodo de um outro objeto ou uma função
+            expectPeek(DOT);
+            expectPeek(IDENT);
+            expectPeek(LPAREN);
+            parseExpression();
+            expectPeek(RPAREN);
+        }
+    }
+
 
     void parseParameterList() {
         printNonTerminal("parameterList");
@@ -125,13 +158,26 @@ public class Parser {
                 expectPeek(IDENT);
                 break;
             default:
-                throw error(peekToken, "term expected");
+                    throw error(peekToken, "term expected");
+            }
+            printNonTerminal("/term");
         }
 
-        printNonTerminal("/term");
+    public void parseExpressionList() {
+        printNonTerminal("expressionList");
+        if (!peekTokenIs(RPAREN))
+        {
+            parseExpression();
+        }
+
+        while (peekTokenIs(COMMA)) {
+            expectPeek(COMMA);
+            parseExpression();
+        }
+        printNonTerminal("/expressionList");
     }
 
-    void parseExpression() {
+      void parseExpression() {
         printNonTerminal("expression");
         parseTerm();
         while (isOperator(peekToken.lexeme)) {
@@ -171,17 +217,7 @@ public class Parser {
         printNonTerminal("/doStatement");
     }
 
-    void parseExpressionList() {
-        printNonTerminal("expressionList");
-        if (!peekTokenIs(RPAREN)) {
-            parseExpression();
-            while (peekTokenIs(COMMA)) {
-                expectPeek(COMMA);
-                parseExpression();
-            }
-        }
-        printNonTerminal("/expressionList");
-    }
+    
 
     void parseReturn() {
         printNonTerminal("returnStatement");

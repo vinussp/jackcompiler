@@ -20,6 +20,7 @@ public class Token {
         String valor = lexeme;
         if (type.equals("NUMBER"))
             type =  "integerConstant";
+            type =  "integerConstant";
 
         if (type.equals("STRING"))
             type =  "stringConstant";

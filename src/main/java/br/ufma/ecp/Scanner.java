@@ -7,7 +7,7 @@ import java.util.Map;
 import br.ufma.ecp.token.Token;
 import br.ufma.ecp.token.TokenType;
 import static br.ufma.ecp.token.TokenType.EOF;
-import static br.ufma.ecp.token.TokenType.IDENT;
+import static br.ufma.ecp.token.TokenType.IDENTIFIER;
 import static br.ufma.ecp.token.TokenType.ILLEGAL;
 import static br.ufma.ecp.token.TokenType.NUMBER;
 
@@ -163,7 +163,7 @@ public class Scanner {
 
         String id = new String(input, start, current-start, StandardCharsets.UTF_8)  ;
         TokenType type = keywords.get(id);
-        if (type == null) type = IDENT;
+        if (type == null) type = IDENTIFIER;
         return new Token(type, id, line);
     }
 

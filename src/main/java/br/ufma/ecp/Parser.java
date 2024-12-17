@@ -14,7 +14,7 @@ import static br.ufma.ecp.token.TokenType.EQ;
 import static br.ufma.ecp.token.TokenType.FALSE;
 import static br.ufma.ecp.token.TokenType.FIELD;
 import static br.ufma.ecp.token.TokenType.FUNCTION;
-import static br.ufma.ecp.token.TokenType.IDENT;
+import static br.ufma.ecp.token.TokenType.IDENTIFIER;
 import static br.ufma.ecp.token.TokenType.IF;
 import static br.ufma.ecp.token.TokenType.INT;
 import static br.ufma.ecp.token.TokenType.LBRACE;
@@ -63,7 +63,7 @@ public class Parser {
     public void parseClass() {
         printNonTerminal("class");
         expectPeek(CLASS);
-        expectPeek(IDENT);
+        expectPeek(IDENTIFIER);
         expectPeek(LBRACE);
         while (peekTokenIs(STATIC) || peekTokenIs(FIELD)) {
             parseClassVarDec();
@@ -83,7 +83,7 @@ public class Parser {
         } else {
             // pode ser um metodo de um outro objeto ou uma função
             expectPeek(DOT);
-            expectPeek(IDENT);
+            expectPeek(IDENTIFIER);
             expectPeek(LPAREN);
             parseExpression();
             expectPeek(RPAREN);
@@ -160,15 +160,28 @@ public class Parser {
             case THIS:
                 expectPeek(THIS);
                 break;
-            case IDENT:
-                expectPeek(IDENT);
+            case IDENTIFIER:
+                expectPeek(IDENTIFIER); // Consome o identificador inicial.
+    
+                // Tratamento de acessos encadeados e chamadas de métodos
+                while (peekTokenIs(DOT) || peekTokenIs(LPAREN)) {
+                    if (peekTokenIs(DOT)) {        // Caso de 'Square.new'
+                        expectPeek(DOT);           // Consome '.'
+                        expectPeek(IDENTIFIER);    // Espera o nome do método/atributo (ex: 'new')
+                    }
+                    if (peekTokenIs(LPAREN)) {     // Caso de 'new(...)'
+                        expectPeek(LPAREN);        // Consome '('
+                        parseExpressionList();       // Analisa os argumentos
+                        expectPeek(RPAREN);        // Consome ')'
+                    }
+                }
                 break;
             default:
-                    throw error(peekToken, "term expected");
-            }
-            printNonTerminal("/term");
+                throw error(peekToken, "term expected");
         }
-
+        printNonTerminal("/term");
+    }
+    
     public void parseExpressionList() {
         printNonTerminal("expressionList");
         if (!peekTokenIs(RPAREN))
@@ -196,7 +209,7 @@ public class Parser {
     void parseLet() {
         printNonTerminal("letStatement");
         expectPeek(LET);
-        expectPeek(IDENT);
+        expectPeek(IDENTIFIER);
 
         if (peekTokenIs(LBRACKET)) {
             expectPeek(LBRACKET);
@@ -345,7 +358,7 @@ public class Parser {
         if (peekTokenIs(INT) || peekTokenIs(CHAR) || peekTokenIs(BOOLEAN)) {
             nextToken();
             xmlOutput.append(String.format("<keyword> %s </keyword>\r\n", currentToken.lexeme));
-        } else if (peekTokenIs(IDENT)) {
+        } else if (peekTokenIs(IDENTIFIER)) {
             parseVarName();
         } else {
             throw error(peekToken, "Expected a type");
@@ -353,7 +366,7 @@ public class Parser {
     }
 
     void parseVarName() {
-        expectPeek(IDENT);
+        expectPeek(IDENTIFIER);
     }
     
 

@@ -1,14 +1,10 @@
 package br.ufma.ecp;
 
-import static org.junit.Assert.assertEquals;
-
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
+import static org.junit.Assert.assertEquals;
 import org.junit.Test;
-
-import br.ufma.ecp.token.Token;
-import br.ufma.ecp.token.TokenType;
 
 public class ParserTest extends TestSupport {
 
@@ -104,7 +100,7 @@ public class ParserTest extends TestSupport {
     
     @Test
     public void testParseLet() {
-        var input = "let string = 30;";
+        var input = "let square = Square.new(0, 0, 30);";
         var parser = new Parser(input.getBytes(StandardCharsets.UTF_8));
         parser.parseLet();
         var expectedResult =  """
@@ -148,8 +144,7 @@ public class ParserTest extends TestSupport {
         result = result.replaceAll("\r", ""); // no codigo em linux não tem o retorno de carro
         assertEquals(expectedResult, result);
     }
-
-
+    
     @Test
     public void testParseIf() {
         var input = "if (direction = 1) { do square.moveUp(); }";

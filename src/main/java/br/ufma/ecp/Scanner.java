@@ -11,6 +11,7 @@ import static br.ufma.ecp.token.TokenType.IDENT;
 import static br.ufma.ecp.token.TokenType.ILLEGAL;
 import static br.ufma.ecp.token.TokenType.NUMBER;
 
+
 public class Scanner {
 
     private byte[] input;
@@ -115,7 +116,6 @@ public class Scanner {
             case '~':
                 advance();
                 return new Token (TokenType.NOT,"~", line);
-
             case '>':
                 advance();
                 return new Token (TokenType.GT,">", line);
@@ -125,7 +125,6 @@ public class Scanner {
             case '=':
                 advance();
                 return new Token (TokenType.EQ,"=", line);
-        
             case '(':
                 advance();
                 return new Token (TokenType.LPAREN,"(", line);

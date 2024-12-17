@@ -22,6 +22,8 @@ import static br.ufma.ecp.token.TokenType.LBRACKET;
 import static br.ufma.ecp.token.TokenType.LET;
 import static br.ufma.ecp.token.TokenType.LPAREN;
 import static br.ufma.ecp.token.TokenType.METHOD;
+import static br.ufma.ecp.token.TokenType.MINUS;
+import static br.ufma.ecp.token.TokenType.NOT;
 import static br.ufma.ecp.token.TokenType.NULL;
 import static br.ufma.ecp.token.TokenType.NUMBER;
 import static br.ufma.ecp.token.TokenType.RBRACE;
@@ -34,6 +36,7 @@ import static br.ufma.ecp.token.TokenType.STRING;
 import static br.ufma.ecp.token.TokenType.THIS;
 import static br.ufma.ecp.token.TokenType.TRUE;
 import static br.ufma.ecp.token.TokenType.VAR;
+import static br.ufma.ecp.token.TokenType.VOID;
 import static br.ufma.ecp.token.TokenType.WHILE;
 
 
@@ -118,6 +121,9 @@ public class Parser {
         }
     
         parseVarName();
+        // 'int' | 'char' | 'boolean' | className
+        expectPeek(VOID, INT, CHAR, BOOLEAN, IDENT);
+        expectPeek(IDENT);
 
         expectPeek(LPAREN);
         parseParameterList();
@@ -125,6 +131,8 @@ public class Parser {
         
         parseSubroutineBody();
     
+        parseSubroutineBody();
+
         printNonTerminal("/subroutineDec");
     }
     
@@ -169,6 +177,35 @@ public class Parser {
             printNonTerminal("/term");
         }
 
+    
+                while (peekTokenIs(DOT) || peekTokenIs(LPAREN)) {
+                    if (peekTokenIs(DOT)) {        
+                        expectPeek(DOT);         
+                        expectPeek(IDENT);
+                    }
+                    if (peekTokenIs(LPAREN)) {    
+                        expectPeek(LPAREN);    
+                        parseExpressionList();      
+                        expectPeek(RPAREN);        
+                    }
+                }
+                break;
+                case LPAREN:
+                expectPeek(LPAREN);
+                parseExpression();
+                expectPeek(RPAREN);
+                break;
+            case MINUS:
+            case NOT:
+                expectPeek(MINUS, NOT);
+                parseTerm();
+                break;
+            default:
+                throw error(peekToken, "term expected");
+        }
+        printNonTerminal("/term");
+    }
+    
     public void parseExpressionList() {
         printNonTerminal("expressionList");
         if (!peekTokenIs(RPAREN))
@@ -313,6 +350,13 @@ public class Parser {
         while (peekTokenIs(COMMA)) {
             expectPeek(COMMA);
             parseVarName();
+        // 'int' | 'char' | 'boolean' | className
+        expectPeek(INT, CHAR, BOOLEAN, IDENT);
+        expectPeek(IDENT);
+
+        while (peekTokenIs(COMMA)) {
+            expectPeek(COMMA);
+            expectPeek(IDENT);
         }
 
         expectPeek(SEMICOLON);
@@ -335,6 +379,14 @@ public class Parser {
         while (peekTokenIs(COMMA)) {
             expectPeek(COMMA);
             parseVarName();
+        expectPeek(FIELD, STATIC);
+        // 'int' | 'char' | 'boolean' | className
+        expectPeek(INT, CHAR, BOOLEAN, IDENT);
+        expectPeek(IDENT);
+
+        while (peekTokenIs(COMMA)) {
+            expectPeek(COMMA);
+            expectPeek(IDENT);
         }
 
         expectPeek(SEMICOLON);

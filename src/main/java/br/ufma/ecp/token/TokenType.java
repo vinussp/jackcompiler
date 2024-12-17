@@ -22,7 +22,7 @@ public enum TokenType {
      INTEGER,
 
     
-     IDENTIFIER,
+     IDENT,
 
  
      // keywords

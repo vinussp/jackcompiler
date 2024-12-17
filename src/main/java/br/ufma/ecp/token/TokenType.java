@@ -14,13 +14,14 @@ public enum TokenType {
 
     AND, OR, NOT,
 
-    LT, GT, EQ,
+    LT, GT, EQ, 
 
      // Literals.
      NUMBER,
      STRING,
+     INTEGER,
 
-
+    
      IDENT,
 
  

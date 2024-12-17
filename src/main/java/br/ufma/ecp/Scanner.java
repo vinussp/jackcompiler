@@ -115,7 +115,6 @@ public class Scanner {
             case '~':
                 advance();
                 return new Token (TokenType.NOT,"~", line);
-
             case '>':
                 advance();
                 return new Token (TokenType.GT,">", line);
@@ -125,7 +124,6 @@ public class Scanner {
             case '=':
                 advance();
                 return new Token (TokenType.EQ,"=", line);
-        
             case '(':
                 advance();
                 return new Token (TokenType.LPAREN,"(", line);

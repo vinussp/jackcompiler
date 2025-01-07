@@ -57,9 +57,11 @@ public class Parser {
     private Token peekToken;
     private StringBuilder xmlOutput = new StringBuilder();
     private String className;
-    private int ifLabelNum;
 
     private VMWriter vmWriter = new VMWriter();
+
+    private int ifLabelNum = 0 ;
+    private int whileLabelNum = 0;
 
     public Parser(byte[] input) {
         scan = new Scanner(input);
@@ -122,6 +124,8 @@ public class Parser {
 
     void parseSubroutineDec() {
         printNonTerminal("subroutineDec");
+        ifLabelNum = 0;
+        whileLabelNum = 0;
         expectPeek(CONSTRUCTOR, FUNCTION, METHOD);
         // 'int' | 'char' | 'boolean' | className
         expectPeek(VOID, INT, CHAR, BOOLEAN, IDENT);
@@ -306,18 +310,36 @@ public class Parser {
 
     void parseIf() {
         printNonTerminal("ifStatement");
+        var labelTrue = "IF_TRUE" + ifLabelNum;
+        var labelFalse = "IF_FALSE" + ifLabelNum;
+        var labelEnd = "IF_END" + ifLabelNum;
+
+        ifLabelNum++;
+        
         expectPeek(IF);
         expectPeek(LPAREN);
         parseExpression();
         expectPeek(RPAREN);
+
+        vmWriter.writeIf(labelTrue);
+        vmWriter.writeGoto(labelFalse);
+        vmWriter.writeLabel(labelTrue);
+
         expectPeek(LBRACE);
         parseStatements();
         expectPeek(RBRACE);
+
+        if (peekTokenIs(ELSE)){
+            vmWriter.writeGoto(labelEnd);
+        }
+        vmWriter.writeLabel(labelFalse);
+
         if (peekTokenIs(ELSE)) {
             expectPeek(ELSE);
             expectPeek(LBRACE);
             parseStatements();
             expectPeek(RBRACE);
+            vmWriter.writeLabel(labelEnd);
         }
         printNonTerminal("/ifStatement");
     }

@@ -318,5 +318,112 @@ public class CodeGeneratorTest extends TestSupport {
                 """;
         assertEquals(expected, actual);
     }
+    @Test
+    public void arrayTest () {
+        var input = """
+            class Main {
+                function void main () {
+                    var Array v;
+                    let v[2] = v[3] + 42;
+                    return;
+                }
+            }
+            """;;
+        var parser = new Parser(input.getBytes(StandardCharsets.UTF_8));
+        parser.parse();
+        String actual = parser.VMOutput();
+        String expected = """
+            function Main.main 1
+            push constant 2
+            push local 0
+            add
+            push constant 3
+            push local 0
+            add
+            pop pointer 1
+            push that 0
+            push constant 42
+            add
+            pop temp 0
+            pop pointer 1
+            push temp 0
+            pop that 0
+            push constant 0
+            return        
+                """;
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void callFunctionTest() {
+
+        var input = """
+            class Main {
+                function int soma (int x, int y) {
+                       return  x + y;
+                }
+               
+                function void main () {
+                       var int d;
+                       let d = Main.soma(4,5);
+                       return;
+                 }
+               
+               }
+            """;;
+        var parser = new Parser(input.getBytes(StandardCharsets.UTF_8));
+        parser.parse();
+
+
+        String actual = parser.VMOutput();
+        String expected = """
+            function Main.soma 0
+            push argument 0
+            push argument 1
+            add
+            return
+            function Main.main 1
+            push constant 4
+            push constant 5
+            call Main.soma 2
+            pop local 0
+            push constant 0
+            return
+                """;
+        assertEquals(expected, actual);
+
+
+    }
+    @Test
+    public void methodTest () {
+        var input = """
+            class Main {
+                function void main () {
+                    var Point p;
+                    var int x;
+                    let p = Point.new (10, 20);
+                    let x = p.getX();
+                    return;
+                }
+            }
+            """;;
+        var parser = new Parser(input.getBytes(StandardCharsets.UTF_8));
+        parser.parse();
+        String actual = parser.VMOutput();
+        String expected = """
+            function Main.main 2
+            push constant 10
+            push constant 20
+            call Point.new 2
+            pop local 0
+            push local 0
+            call Point.getX 1
+            pop local 1
+            push constant 0
+            return
+                """;
+        assertEquals(expected, actual);
+    }
 
 }
+

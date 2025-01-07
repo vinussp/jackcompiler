@@ -50,6 +50,8 @@ public class Parser {
     private String className;
     private int ifLabelNum;
 
+    private VMWriter vmWriter = new VMWriter();
+
     public Parser(byte[] input) {
         scan = new Scanner(input);
         nextToken();
@@ -421,4 +423,9 @@ public class Parser {
         }
         return new ParseError();
     }
+
+    public String VMOutput() {
+        return vmWriter.vmOutput();
+}
+
 }

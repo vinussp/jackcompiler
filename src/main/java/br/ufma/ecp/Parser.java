@@ -348,7 +348,7 @@ public class Parser {
         printNonTerminal("/letStatement");
     }
 
-    void parseDo() {
+    /*void parseDo() {
         printNonTerminal("doStatement");
         expectPeek(DO);
     
@@ -362,7 +362,17 @@ public class Parser {
         parseExpressionList();
         expectPeek(RPAREN);
         expectPeek(SEMICOLON);
-    
+        vmWriter.writePop(Segment.TEMP, 0);
+        printNonTerminal("/doStatement");
+    }*/
+    void parseDo() {
+        printNonTerminal("doStatement");
+        expectPeek(DO);
+        expectPeek(IDENT);
+        parseSubroutineCall();
+        expectPeek(SEMICOLON);
+        vmWriter.writePop(Segment.TEMP, 0);
+
         printNonTerminal("/doStatement");
     }
 

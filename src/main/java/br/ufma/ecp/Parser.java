@@ -298,12 +298,25 @@ public class Parser {
 
     void parseWhile() {
         printNonTerminal("whileStatement");
+        
+        var labelTrue = "WHILE_EXP" + whileLabelNum;
+        var labelFalse = "WHILE_END" + whileLabelNum;
+        whileLabelNum++;
+
+        vmWriter.writeLabel(labelTrue);
+
         expectPeek(WHILE);
         expectPeek(LPAREN);
         parseExpression();
+
+        vmWriter.writeArithmetic(Command.NOT);
+        vmWriter.writeIf(labelFalse);
+
         expectPeek(RPAREN);
         expectPeek(LBRACE);
         parseStatements();
+        vmWriter.writeGoto(labelTrue); 
+        vmWriter.writeLabel(labelFalse);
         expectPeek(RBRACE);
         printNonTerminal("/whileStatement");
     }

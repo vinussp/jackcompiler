@@ -272,18 +272,28 @@ public class Parser {
     }
 
     void parseLet() {
+        var isArray = false;
         printNonTerminal("letStatement");
         expectPeek(LET);
         expectPeek(IDENT);
+        
+        var symbol = symTable.resolve(currentToken.lexeme);
 
         if (peekTokenIs(LBRACKET)) {
             expectPeek(LBRACKET);
             parseExpression();
             expectPeek(RBRACKET);
+            isArray = true;
         }
 
         expectPeek(EQ);
         parseExpression();
+
+        if (isArray) {
+            
+        } else {
+            vmWriter.writePop(kind2Segment(symbol.kind()), symbol.index());
+        }
         expectPeek(SEMICOLON);
         printNonTerminal("/letStatement");
     }

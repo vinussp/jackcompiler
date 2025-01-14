@@ -1,59 +1,88 @@
 package br.ufma.ecp;
 
+import static br.ufma.ecp.token.TokenType.*;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+
 import br.ufma.ecp.token.Token;
-import br.ufma.ecp.token.TokenType;
 
-public class App 
-{
+public class App {
 
-    
-    public static void main( String[] args )
-    {
-        
-        String input = """
-        //while
-        é um comentario 10
-        45 \"hello\" variavel + while < , if
-        /*
-        comentario em bloco
-        */
-        42 ola
-      
-        """;
-        Scanner scan = new Scanner (input.getBytes());
-            for (Token tk = scan.nextToken(); tk.type != TokenType.EOF; tk = scan.nextToken()) {
-                System.out.println(tk);
-            }       
-
-
-        /* 
-        //String input = "false true null var char boolean null this field while if return ";
-        String input = "+ / > < ~ & * | ()";
-        Scanner scan = new Scanner (input.getBytes());
-        for (Token tk = scan.nextToken(); tk.type != EOF; tk = scan.nextToken()) {
-            System.out.println(tk);
+    public static void saveToFile(String fileName, String output) {
+        FileOutputStream outputStream;
+        try {
+            outputStream = new FileOutputStream(fileName);
+            byte[] strToBytes = output.getBytes();
+            outputStream.write(strToBytes);
+            outputStream.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        */
-        /*
-        Parser p = new Parser (input.getBytes());
-        p.parse();
-        */
+    }
+
+    private static String fromFile(File file) {
+        byte[] bytes;
+        try {
+            bytes = Files.readAllBytes(file.toPath());
+            String textoDoArquivo = new String(bytes, "UTF-8");
+            return textoDoArquivo;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return "";
+    }
+
+    public static void main(String[] args) {
+        // Caminho fixo para o arquivo Main.jack
+
+        //Average
+        String folderPath  = "D:\\Documentos\\IdeaProjects\\jackcompiler\\src\\test\\Average";
+
+        //Pong
+        //String folderPath = "D:\\Documentos\\IdeaProjects\\jackcompiler\\src\\test\\Pong";
+
+        //Seven
+        //String folderPath  = "D:\\Documentos\\IdeaProjects\\jackcompiler\\src\\test\\Seven\";
 
 
-        //Parser p = new Parser (fromFile().getBytes());
-        //p.parse();
+        File folder = new File(folderPath);
 
-        /*
-        String input = "489-85+69";
-        Scanner scan = new Scanner (input.getBytes());
-        System.out.println(scan.nextToken());
-        System.out.println(scan.nextToken());
-        System.out.println(scan.nextToken());
-        System.out.println(scan.nextToken());
-        System.out.println(scan.nextToken());
-        Token tk = new Token(NUMBER, "42");
-        System.out.println(tk);
-        */
-        
+        if (!folder.exists() || !folder.isDirectory()) {
+            System.err.println("The directory doesn't exist or is not a valid directory: " + folderPath);
+            System.exit(1);
+        }
+
+        // Lista todos os arquivos .jack no diretório
+        File[] jackFiles = folder.listFiles((dir, name) -> name.endsWith(".jack"));
+
+        if (jackFiles == null || jackFiles.length == 0) {
+            System.err.println("No .jack files found in the directory: " + folderPath);
+            System.exit(1);
+        }
+
+        for (File file : jackFiles) {
+            var inputFileName = file.getAbsolutePath();
+            var pos = inputFileName.lastIndexOf('.');
+            var outputFileName = inputFileName.substring(0, pos) + ".vm";
+
+            System.out.println("Compiling " + inputFileName);
+            var input = fromFile(file);
+            var parser = new Parser(input.getBytes(StandardCharsets.UTF_8));
+            parser.parse();
+            var result = parser.VMOutput();
+            saveToFile(outputFileName, result);
+
+            System.out.println("Compilation completed: " + outputFileName);
+        }
+
+        System.out.println("All .jack files have been compiled.");
     }
 }
+
